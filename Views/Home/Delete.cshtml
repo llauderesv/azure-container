@@ -1,0 +1,29 @@
+@model AzureContainer.Models.Product
+@{
+  ViewData["Title"] = "Delete";
+}
+
+<h1>Delete</h1>
+<h4>Product</h4>
+<hr>
+<div class="row">
+  <div class="col-md-4">
+    <form asp-action="Delete">
+      <input type="hidden" asp-for="Id">
+      <dl>
+        <dt>Name</dt>
+        <dd>@Model.Name</dd>
+        <dt>Category</dt>
+        <dd>@Model.Category</dd>
+        <dt>Price</dt>
+        <dd asp-for="Price">$@Model.Price.ToString("F2")</dd>
+      </dl>
+
+      <input type="submit" value="Delete" class="btn btn-danger" />
+    </form>
+  </div>
+</div>
+
+<div>
+  <a asp-action="Index">Back to List</a>
+</div>

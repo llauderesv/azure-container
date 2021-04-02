@@ -1,0 +1,24 @@
+@model AzureContainer.Models.Product
+@{
+  ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+<h4>Product</h4>
+<hr>
+<div class="row">
+  <div class="col-md-4">
+    <dl>
+      <dt>Name</dt>
+      <dd>@Model.Name</dd>
+      <dt>Category</dt>
+      <dd>@Model.Category</dd>
+      <dt>Price</dt>
+      <dd asp-for="Price">$@Model.Price.ToString("F2")</dd>
+    </dl>
+  </div>
+</div>
+
+<div>
+  <a asp-action="Index">Back to List</a>
+</div>

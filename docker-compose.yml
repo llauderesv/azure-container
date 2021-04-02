@@ -1,0 +1,56 @@
+# Instruction
+# 1. docker-compose build
+# 2. docker-compose up
+# 3. docker-compose scale mvc=4
+# 4. docker-compose build && docker-compose up
+# 5. docker-compose stop && docker-compose rm
+
+version: '3'
+
+volumes:
+  productdata:
+
+networks:
+  frontend:
+  backend:
+
+services:
+  mariadb:
+    image: 'mariadb:10.5.8'
+    volumes:
+      - productdata:/var/lib/mysql
+    networks:
+      - backend
+    environment:
+      - MYSQL_ROOT_PASSWORD=mysecret
+      - bind-address=0.0.0.0 # any network could able to connect to mysql database.
+
+  # build the application
+  mvc:
+    build:
+      context: .
+      dockerfile: Development.Dockerfile
+    networks:
+      - frontend
+      - backend
+    environment:
+      - DBHOST=mariadb
+      - DOTNET_USE_POLLING_FILE_WATCHER=1
+      - ASPNETCORE_ENVIRONMENT=Production
+      - CONFIG_MESSAGE="Hello World"
+    depends_on:
+      - mariadb
+    volumes:
+      - ./:/app
+
+  # build loadbalancer
+  loadbalancer:
+    image: dockercloud/haproxy:latest
+    ports:
+      - 3000:80
+    links:
+      - mvc
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - frontend
