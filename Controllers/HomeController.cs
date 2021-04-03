@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using AzureContainer.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using AzureContainer.Exceptions;
+using AzureContainer.Interfaces;
 
 namespace AzureContainer.Controllers
 {
@@ -17,18 +19,18 @@ namespace AzureContainer.Controllers
 
         private readonly string _message;
         private readonly string _configMessage;
-        private readonly ProductDbContext _context;
+        private readonly IProductRepository _productRepository;
 
         public HomeController(
-            ILogger<HomeController> logger, 
-            IConfiguration config, 
-            ProductDbContext context)
+            ILogger<HomeController> logger,
+            IConfiguration config,
+            IProductRepository productRepository)
         {
             _logger = logger;
             _message = $"Essential Docker ({config["HOSTNAME"]})";
             _configMessage = $"Essential Docker ({config["CONFIG_MESSAGE"]})";
 
-            _context = context;
+            _productRepository = productRepository;
         }
 
         public async Task<IActionResult> Index()
@@ -36,9 +38,7 @@ namespace AzureContainer.Controllers
             ViewBag.Message = _message;
             ViewBag.ConfigMessage = _configMessage;
 
-            var products = await _context.Products.ToListAsync();
-
-            return View(products);
+            return View(await _productRepository.Products.ToListAsync());
         }
 
         public IActionResult Privacy()
@@ -47,7 +47,7 @@ namespace AzureContainer.Controllers
         }
 
         [HttpGet]
-        public IActionResult Create() 
+        public IActionResult Create()
         {
             return View();
         }
@@ -60,20 +60,21 @@ namespace AzureContainer.Controllers
 
             try
             {
-                _context.Products.Add(product);
-                await _context.SaveChangesAsync();
+                await _productRepository.Insert(product);
             }
-            catch (Exception){ throw; }
+            catch (Exception) { throw; }
 
             return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
-        public async Task<IActionResult> Edit(int id) 
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null) { return NotFound(); }
+            var product =
+                await _productRepository.Products
+                        .Where(p => p.Id == id)
+                        .FirstOrDefaultAsync();
 
-            var product = await _context.Products.FindAsync(id);
             if (product == null) { return NotFound(); }
 
             return View(product);
@@ -86,14 +87,15 @@ namespace AzureContainer.Controllers
             if (id != product.Id) { return NotFound(); }
             if (!ModelState.IsValid) { return View(product); }
 
-            try 
+            try
             {
-                _context.Products.Update(product);
-                await _context.SaveChangesAsync();
+                await _productRepository.Update(product);
             }
-            catch (Exception)
+            catch (RepositoryException ex)
             {
-                var findProduct = await _context.Products.FindAsync(id);
+                var findProduct = await _productRepository.Products
+                        .Where(p => p.Id == id)
+                        .FirstOrDefaultAsync();
                 if (findProduct == null) { return NotFound(); }
                 else { throw; }
             }
@@ -104,34 +106,41 @@ namespace AzureContainer.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            if (id == null) { return NotFound(); }
-
-            var product = await _context.Products.FindAsync(id);
+            var product = await _productRepository.Products
+                            .Where(p => p.Id == id)
+                            .FirstOrDefaultAsync();
             if (product == null) { return NotFound(); }
 
             return View(product);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (id == null){ return NotFound(); }
+            var product = await _productRepository.Products
+                        .Where(p => p.Id == id)
+                        .FirstOrDefaultAsync();
+            if (product == null) { return NotFound(); }
 
-            var movie = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
-            if (movie == null) { return NotFound(); }
-
-            return View(movie);
+            return View(product);
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = await _context.Products.FindAsync(id);
-            _context.Products.Remove(product);
-            await _context.SaveChangesAsync();
-            
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _productRepository.Delete(id);
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (RepositoryException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+
+                return View();
+            }
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -139,5 +148,12 @@ namespace AzureContainer.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        [HttpGet]
+        public IActionResult PageNotFound()
+        {
+            return View("~/Views/Shared/PageNotFound.cshtml");
+        }
+
     }
 }

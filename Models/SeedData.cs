@@ -22,28 +22,28 @@ namespace AzureContainer.Models
                 WriteLine("Creating Seed Data...");
 
                 context.Products.AddRange(
-                    new Product 
+                    new Product
                     {
-                        Name = "Kayak", 
-                        Category = "Watersports", 
+                        Name = "Kayak",
+                        Category = "Watersports",
                         Price = 275
                     },
-                    new Product 
+                    new Product
                     {
-                        Name = "Lifejacket", 
-                        Category = "Watersports", 
+                        Name = "Lifejacket",
+                        Category = "Watersports",
                         Price = 48.95m
                     },
-                    new Product 
+                    new Product
                     {
-                        Name = "Soccer Ball", 
-                        Category = "Soccer", 
+                        Name = "Soccer Ball",
+                        Category = "Soccer",
                         Price = 19.50m
                     },
-                    new Product 
+                    new Product
                     {
-                        Name = "Thinking Cap", 
-                        Category = "Chess", 
+                        Name = "Thinking Cap",
+                        Category = "Chess",
                         Price = 29.95m
                     });
 

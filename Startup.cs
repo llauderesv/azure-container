@@ -1,3 +1,4 @@
+using System.Net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Http;
 
 namespace AzureContainer
 {
@@ -36,7 +38,7 @@ namespace AzureContainer
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
             services.AddSingleton<IConfiguration>(Configuration);
-            services.AddTransient<IRepository, ProductRepository>();
+            services.AddTransient<IProductRepository, ProductRepository>();
 
             services.AddControllersWithViews();
         }
@@ -55,9 +57,10 @@ namespace AzureContainer
                 app.UseHsts();
             }
 
-
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            app.Use(RedirectToPageNotFound);
 
             app.UseRouting();
 
@@ -71,6 +74,16 @@ namespace AzureContainer
             });
 
             SeedData.EnsurePopulated(app);
+        }
+
+        private async Task RedirectToPageNotFound(HttpContext context, Func<Task> next)
+        {
+            await next();
+            if (context.Response.StatusCode == (int)HttpStatusCode.NotFound)
+            {
+                context.Request.Path = "/Home/PageNotFound";
+                await next();
+            }
         }
     }
 }
