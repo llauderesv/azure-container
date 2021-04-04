@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Http;
+using AzureContainer.Exceptions;
 
 namespace AzureContainer
 {
@@ -39,6 +40,7 @@ namespace AzureContainer
 
             services.AddSingleton<IConfiguration>(Configuration);
             services.AddTransient<IProductRepository, ProductRepository>();
+            services.AddLogging();
 
             services.AddControllersWithViews();
         }

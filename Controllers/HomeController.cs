@@ -93,11 +93,8 @@ namespace AzureContainer.Controllers
             }
             catch (RepositoryException ex)
             {
-                var findProduct = await _productRepository.Products
-                        .Where(p => p.Id == id)
-                        .FirstOrDefaultAsync();
-                if (findProduct == null) { return NotFound(); }
-                else { throw; }
+                _logger.Log(LogLevel.Error, ex.Message);
+                return View(product);
             }
 
             return RedirectToAction(nameof(Index));

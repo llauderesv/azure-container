@@ -6,24 +6,12 @@ namespace AzureContainer.Exceptions
 {
     public class RepositoryException : Exception
     {
-        private readonly ILogger<RepositoryException> _logger;
+        public RepositoryException() { }
 
-        public RepositoryException(ILogger<RepositoryException> logger)
-        {
-            _logger = logger;
-        }
+        public RepositoryException(string message) : base(message) { }
 
-        public RepositoryException(string message) : base(message)
-        {
-            _logger.LogDebug(message);
-        }
+        public RepositoryException(string message, Exception innerException) : base(message, innerException) { }
 
-        public RepositoryException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        protected RepositoryException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+        protected RepositoryException(SerializationInfo info, StreamingContext context) : base(info, context) { }
     }
 }
