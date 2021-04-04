@@ -1,6 +1,6 @@
-# Azure App Service .NET Core
+# .NET Core Azure Container in App Service
 
-This application is built using `.NET Core` and use `Docker` to containerize the application. It's deployed in Azure App Service to demonstrate how cloud-native applications works.
+This application is built using `.NET Core` and uses `Docker` to containerize the application. It's deployed in Azure App Service to demonstrate how cloud-native applications works.
 
 ```
 Development
